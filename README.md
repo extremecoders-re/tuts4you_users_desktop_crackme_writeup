@@ -1,10 +1,8 @@
-# tuts4you Users Desktop crackme Writeup
+# Tuts4You Users Desktop CrackMe Writeup
 
 Source: https://forum.tuts4you.com/topic/43809-users-desktop-crackme/
 
-The password which solves this challenge is the same as the one posted by kao.
-
-Here is my quick writeup for the same.
+CrackMe Author: 0x777h
 
 ## I : Bypassing anti-debug
 First of all, to make the addresses not vary in between the runs we can disable ASLR for the binary by patching the Dll can move flag in PE Optional header. This is not strictly required but makes it easy to follow along.
