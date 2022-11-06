@@ -105,3 +105,7 @@ Finally, we print the complete password when we have got the null terminator.
 ![](img/10.png)
 
 The correct password is printed at the end. Note that we need to inject the frida script after suspending the protection thread in the same way we were attaching the debugger.
+
+```
+C86C00C21618470B9C6EB5E3CA2A6D51
+```
