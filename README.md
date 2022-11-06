@@ -7,14 +7,14 @@ The password which solves this challenge is the same as the one posted by kao.
 Here is my quick writeup for the same.
 
 ## I : Bypassing anti-debug
-First of all, to make the addresses not vary in between runs we can disable ASLR for this binary by patching changing the Dll can move flag in the Optional header. This is not strictly required but makes it easy to follow along.
+First of all, to make the addresses not vary in between the runs we can disable ASLR for the binary by patching the Dll can move flag in PE Optional header. This is not strictly required but makes it easy to follow along.
 
-The binary implements lots of anti-debug, specially playing with HANDLES which makes it a little bit tough to debug right out of the box. Also trying to the attach to the application would make it quit immediately. 
+The binary implements lots of anti-debug, specially playing with HANDLES which makes it a little bit tough to debug right out of the box. Also trying to the attach to the application would make it quit immediately.
 
 In Process Hacker  we can check that the application is multi-threaded. 
 ![](img/1.png)
 
-In fact the protection logic is implemented on the secondary thread which has a higher cpu usage (1.32 in the picture). At this point we can suspend the thread. Once that is done we can simply attach to the process with x64dbg without any issue.
+In fact, the protection logic is implemented on the secondary thread which has a higher CPU usage (1.32 in the image). At this point we can suspend the thread. Once that is done we can simply attach to the process with x64dbg without any issue.
 
 ## II : Finding a suitable point to start
 
@@ -30,7 +30,7 @@ With the breakpoint in place we can enter any password say `123456789ABCDEF` and
 From here we can continue single stepping until we exit the `fgets` function and enter the VM region identified by the presence of obfuscated code.
 
 ![](img/4.png)
-The `ret` instruction at `0x140004B51` should likely be the end of the `fgets` function. 
+The `ret` instruction at `0x140004B51` should likely be the end of the `fgets`. 
 
 Stepping once from here we can see obfuscated code signifying the start of VM.
 ![](img/5.png)
@@ -41,7 +41,7 @@ At this point on the stack we can see our entered password.
 
 ![](img/6.png)
 
-We can set a hardware breakpoint on read at `0x14FD68`, the address where the password is stored in memory and continue running the crackme.
+We can set a hardware breakpoint on read at `0x14FE60`, the address where the password is stored in memory and and resume execution.
 
 When the breakpoints hits, set another standard breakpoint on `MessageBoxW` function. The crackme displays the success or failure using this API.
 
@@ -66,7 +66,7 @@ There are no more xor's as the crackme stops comparing further characters as soo
 
 ## V - Recovering the password 
 
-We can set a breakpoint on the instruction `xor eax, ebx` at `0x1400046020`. The value in `eax` after the xor is the correct character corresponding password character.
+We can set a breakpoint on the instruction `xor eax, ebx` at `0x140004602B`. The value in `eax` after the xor is the correct character corresponding password character.
 
 ![](img/8.png)
 
@@ -98,8 +98,8 @@ Interceptor.attach(ptr(0x14004602B), function (args) {
 });
 ```
 
-The script sets a interceptor at the instruction at `0x14004602B` => `xor eax, ebx` .
-When using the script we have to input a large string of 1's (like 1111111111111111111111111111111111) as the password. The script will overwrite the registers such that after the xor rax contains 1, making the crackme believe the check succeeded.
+The script sets a interceptor at the instruction at `0x14004602B` => `xor eax, ebx`.
+When using the script we have to input a large string of 1's (like 1111111111111111111111111111111111) as the password. The script will overwrite the registers such that after the xor, rax contains '1' (=0x31), making the crackme believe the check succeeded.
 
 Finally, we print the complete password when we have got the null terminator.
 ![](img/10.png)
